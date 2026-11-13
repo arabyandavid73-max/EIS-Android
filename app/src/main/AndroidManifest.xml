@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Доступ к локальному Flask-серверу -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="false"
         android:label="Единая Информационная Система"
         android:theme="@android:style/Theme.Material.NoActionBar"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:supportsRtl="true">
 
         <activity
             android:name=".MainActivity"
@@ -22,4 +24,5 @@
         </activity>
 
     </application>
+
 </manifest>
