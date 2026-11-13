@@ -181,26 +181,101 @@ public class MainActivity extends Activity {
     }
 
     void showSearch() {
-        clear();
-        title("Поиск по демонстрационным базам");
+    clear();
+    title("Поиск по демонстрационным базам");
 
-        EditText last = field("Фамилия");
-        EditText first = field("Имя");
-        EditText middle = field("Отчество");
-        EditText dob = field("Дата рождения");
-        EditText inn = field("ИНН");
+    EditText last = field("Фамилия");
+    EditText first = field("Имя");
+    EditText middle = field("Отчество");
+    EditText dob = field("Дата рождения");
+    EditText inn = field("ИНН");
 
-        Button search = new Button(this);
-        search.setText("Найти");
-        content.addView(search);
+    Button search = new Button(this);
+    search.setText("Найти");
+    content.addView(search);
 
-        TextView result = text("Результаты поиска появятся здесь",14);
-        content.addView(result);
+    TextView result = text("Введите данные для поиска", 14);
+    content.addView(result);
 
-        search.setOnClickListener(v -> {
-            result.setText("Для поиска выбери папку с демонстрационными файлами.");
-        });
-    }
+    search.setOnClickListener(v -> {
+        try {
+            JSONObject fields = new JSONObject();
+            fields.put("last", last.getText().toString());
+            fields.put("first", first.getText().toString());
+            fields.put("middle", middle.getText().toString());
+            fields.put("dob", dob.getText().toString());
+            fields.put("inn", inn.getText().toString());
+
+            JSONObject body = new JSONObject();
+            body.put("fields", fields);
+
+            result.setText("Выполняется поиск...");
+
+            new Thread(() -> {
+                try {
+                    URL url = new URL(
+                        "http://127.0.0.1:5001/search"
+                    );
+
+                    HttpURLConnection c =
+                        (HttpURLConnection) url.openConnection();
+
+                    c.setRequestMethod("POST");
+                    c.setDoOutput(true);
+                    c.setRequestProperty(
+                        "Content-Type", "application/json"
+                    );
+
+                    c.getOutputStream().write(
+                        body.toString().getBytes("UTF-8")
+                    );
+
+                    BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(c.getInputStream())
+                    );
+
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+
+                    JSONObject data =
+                        new JSONObject(response.toString());
+
+                    JSONArray results = data.getJSONArray("results");
+
+                    StringBuilder output = new StringBuilder();
+
+                    for (int i = 0; i < results.length(); i++) {
+                        output.append(results.getString(i))
+                              .append("\n\n");
+                    }
+
+                    if (output.length() == 0) {
+                        output.append("Ничего не найдено.");
+                    }
+
+                    runOnUiThread(() ->
+                        result.setText(output.toString())
+                    );
+
+                    reader.close();
+                    c.disconnect();
+
+                } catch (Exception e) {
+                    runOnUiThread(() ->
+                        result.setText("Ошибка: " + e.getMessage())
+                    );
+                }
+            }).start();
+
+        } catch (Exception e) {
+            result.setText("Ошибка формирования запроса");
+        }
+    });
+}
 
     void showFns() {
         clear();
