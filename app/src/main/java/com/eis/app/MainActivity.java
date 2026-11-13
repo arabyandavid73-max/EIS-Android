@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 try {
                     URL url = new URL(
-                        "http://127.0.0.1:5001/search"
+                        "http://192.168.1.2:5001/search"
                     );
 
                     HttpURLConnection c =
